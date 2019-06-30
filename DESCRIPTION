@@ -1,0 +1,17 @@
+Package: tidyouwie
+Title: Wrapper functions for the OUwie function
+Version: 0.0.0.9000
+Authors: Sarah Friedman <sarahtfried@gmail.com>
+Description: Package runs OUwie across all combinations of trees, simmaps, models, and continuous traits and outputs analyses in a neat tibble. Additional functions expand parameter output for easy comparisons between regimes and allow visualization of parameter distributions. 
+Depends: R (>= 3.5.0)
+Imports: 
+	OUwie,
+	phytools, 
+	tidyverse, 
+	gtable, 
+	grid, 
+	viridis
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1.9000
