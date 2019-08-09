@@ -3,7 +3,7 @@ Package containing wrapper functions around OUwie to streamline analyses and exp
 
 
 # Example R Code:
-
+```r
 #simulating data for example
 phy <- pbtree(n = 20, nsim = 2) 
 
@@ -19,3 +19,4 @@ models <- c("BM1", "BMS", "OUM")
 results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)
 
 results$tidy_output
+```
