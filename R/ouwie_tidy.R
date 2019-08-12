@@ -11,6 +11,15 @@
 #' @param tip_col Optional; column name in "cont_traits" that matches tree tips
 #' @param params Optional; list of parameters to be passed to OUwie. NOTE: be aware that default OUwie parameters differ from the default OUwie documentation.
 #' @export
+#' #' @export
+#' @return Function returns a list of the following
+#' \item{input}{Simmaps and traits originally input into OUwie}
+#' \item{full_output}{Raw tibble with all results}
+#' \item{tidy_output}{Tidy tibble summarizing results}
+
+
+#' @references Beaulieu, J. M., & O’Meara, B. 2014. OUwie: analysis of evolutionary rates in an OU framework.
+#'
 #' @examples
 
 #' #simulating dummy data to run through OUwie
@@ -168,23 +177,31 @@ new_ouwie <- function(tree, model, data, params, .pb){
   if(!is.null(params$mserr)) mserr = params$mserr else mserr = "none"
   if(!is.null(params$starting.vals)) starting.vals = params$starting.vals else starting.vals = NULL
 
-  out <- OUwie(tree, data, model = model, simmap.tree = TRUE,
-               diagn = TRUE, quiet = TRUE, warn = FALSE, root.age = root.age, scaleHeight = scaleHeight,
-               root.station = root.station, clade = clade, mserr = mserr, starting.vals = starting.vals)
+  out <- OUwie(tree, data, model = model, simmap.tree = TRUE, diagn = TRUE, quiet = TRUE,
+               warn = FALSE, root.age = root.age, scaleHeight = scaleHeight,
+               root.station = root.station, clade = clade, mserr = mserr,
+               starting.vals = starting.vals)
   out
 }
 
 
+
+
+
+
 # wraps up OUwie function by setting up progress bar for all analyses and saving output files for each tree independently
 ouwie_wrapper <- function(x, .pb, dir, params) {
+
   # run ouwie on each simmap
   i <- x$simmap_id[[1]]
 
   # add in optional ouwie arguments
   if(length(params) == 0){
-    out <- x %>% mutate(res = pmap(list(tree, model, data), ~new_ouwie(..1, ..2, ..3, params = NULL, .pb)))
+    out <- x %>% mutate(res = pmap(list(tree, model, data),
+                                   ~new_ouwie(..1, ..2, ..3, params = NULL, .pb)))
   } else {
-    out <- x %>% mutate(res = pmap(list(tree, model, data, params), ~new_ouwie(..1, ..2, ..3, ..4, .pb)))
+    out <- x %>% mutate(res = pmap(list(tree, model, data, params),
+                                   ~new_ouwie(..1, ..2, ..3, ..4, .pb)))
   }
 
    # save intermediate output by simmap
@@ -197,3 +214,4 @@ ouwie_wrapper <- function(x, .pb, dir, params) {
 
   return(out)
 }
+
