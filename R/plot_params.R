@@ -4,11 +4,7 @@
 
 #' @param results output from the ouwie_tidy function
 #' @return Function returns a plot summarizing the model comparisons for each continuous trait in the results output
-
-
 #' @references Beaulieu, J. M., & O’Meara, B. 2014. OUwie: analysis of evolutionary rates in an OU framework.
-#'
-#' @export
 #' @examples
 #' #simulating dummy data to run through OUwie
 #' phy <- pbtree(n = 20, nsim = 2)
@@ -16,11 +12,11 @@
 #' cont_traits <- as_tibble(iris[1:20, 1:2]) %>%
 #'  mutate(species = phy[[1]]$tip.label)
 #'
-#' models <- c("BM1", "BMS", "OUM") #set of models to run on each simmap
+#' models <- c("BM1", "OUM") #set of models to run on each simmap
 #'
 #' results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)#'
 #' plot_params(results)
-
+#' @export
 
 # plots alpha, sigma, and theta parameters for each model and regime; separate plots for each continuous trait in dataset
 plot_params <- function(results) {

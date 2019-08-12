@@ -10,8 +10,6 @@
 #' @param dir Optional; the directory to save output to, otherwise will save to working directory
 #' @param tip_col Optional; column name in "cont_traits" that matches tree tips
 #' @param params Optional; list of parameters to be passed to OUwie. NOTE: be aware that default OUwie parameters differ from the default OUwie documentation.
-#' @export
-#' #' @export
 #' @return Function returns a list of the following
 #' \item{input}{Simmaps and traits originally input into OUwie}
 #' \item{full_output}{Raw tibble with all results}
@@ -28,10 +26,11 @@
 #' cont_traits <- as_tibble(iris[1:20, 1:2]) %>%
 #'  mutate(species = phy[[1]]$tip.label)
 #'
-#' models <- c("BM1", "BMS", "OUM") #set of models to run on each simmap
+#' models <- c("BM1", "OUM") #set of models to run on each simmap
 #'
 #' results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)
 #' results$tidy_output
+#' @export
 
 
 
