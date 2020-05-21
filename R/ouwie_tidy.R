@@ -48,8 +48,9 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 
     # creates unique combinations of each simmap, model, and continuous trait for each row of data, sets up the progress bar, and then separates dataset by simmap so intermediate results can be independently saved
     by_tree <- tibble(tree_id = rep(1:nphy, each = nsim),
-                      simmap_id = rep(1:nsim, nphy), tree = inputs$simtree) %>%
+                      simmap_id = rep(1:nsim, nphy)) %>%
       crossing(model = models) %>%  # make each combination of tree and model
+      left_join(tibble(tree_id = rep(1:nphy, each = nsim), tree = inputs$simtree), by = "tree_id") %>%
       left_join(., inputs$ouwie_input, by = "tree_id") %>%
       spawn_progbar() %>% #set up progress bar to run
       split(.$simmap_id)
@@ -213,4 +214,3 @@ ouwie_wrapper <- function(x, .pb, dir, params) {
 
   return(out)
 }
-

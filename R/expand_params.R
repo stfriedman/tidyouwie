@@ -29,5 +29,7 @@ expand_params <- function(results) {
            value = map(value, ~enframe(.x, name = "regime"))) %>%
     unnest(value, .drop = FALSE) %>%
     unite(name, param, regime) %>%
-    spread(name, value)
-}
+    pivot_wider(names_from = "name", values_from = "value",
+      values_fn = list(value = list)) %>%
+    unchop(everything())
+  }
