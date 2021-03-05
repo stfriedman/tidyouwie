@@ -47,12 +47,15 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
               "runs. \n"))
 
     # creates unique combinations of each simmap, model, and continuous trait for each row of data, sets up the progress bar, and then separates dataset by simmap so intermediate results can be independently saved
+
+    inputs$simtree <- structure(inputs$simtree,
+                                class = c("list","multiSimmap","multiPhylo"))
     by_tree <- tibble(tree_id = rep(1:nphy, each = nsim),
                       simmap_id = rep(1:nsim, nphy)) %>%
       crossing(model = models) %>%  # make each combination of tree and model
       left_join(tibble(tree_id = rep(1:nphy, each = nsim), tree = inputs$simtree), by = "tree_id") %>%
       left_join(., inputs$ouwie_input, by = "tree_id") %>%
-      spawn_progbar() %>% #set up progress bar to run
+      #spawn_progbar() %>% #set up progress bar to run
       split(.$simmap_id)
 
   } else {
@@ -65,11 +68,12 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
               "continuous trait(s). This will be a total of", nruns,
               "runs. \n"))
 
-
+    inputs$simtree <- structure(inputs$simtree,
+                                class = c("list","simmap","phylo"))
     by_tree <- tibble(simmap_id = seq_along(inputs$simtree), tree = inputs$simtree) %>%
       crossing(model = models) %>%  # make each combination of tree and model
       crossing(trait = inputs$ouwie_input) %>%
-      spawn_progbar() %>% #set up progress bar to run
+      #spawn_progbar() %>% #set up progress bar to run
       split(.$simmap_id)
   }
 
@@ -80,9 +84,9 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 
   # run OUwie on each subset (simmap) of data and save intermediate output to designated director
   params <- list(...)
-  raw_output <- by_tree %>%
-    map2(., seq_along(.), ~ouwie_wrapper(.x, .pb, dir, params)) %>%
-    bind_rows()
+  raw <- by_tree %>%
+    map2(., seq_along(.), ~ouwie_wrapper(.x, .pb, dir, params))
+  raw_output <- do.call(rbind, raw)
 
   options(warn = w)
 
@@ -155,38 +159,37 @@ ouwie_setup <- function(phy, regimes, traits, nsim = nsim, tip_col = NULL, dir, 
 }
 
 
-# setting up progress bar for myOUwie function
-spawn_progbar <- function(x, .name = .pb, .times = 1) {
-  .name <- substitute(.name)
-  n <- nrow(x) * .times
-  eval(substitute(.name <<- dplyr::progress_estimated(n)))
-  x
-}
+# # setting up progress bar for myOUwie function
+# spawn_progbar <- function(x, .name = .pb, .times = 1) {
+#   .name <- substitute(.name)
+#   n <- nrow(x) * .times
+#   eval(substitute(.name <<- dplyr::progress_estimated(n)))
+#   x
+# }
 
 
 # OUwie function with attributes pre-set
 new_ouwie <- function(tree, model, data, params, .pb){
   # printing progress bar
-  .pb$tick()$print()
+  #.pb$tick()$print()
   data <- as.data.frame(data)
 
   if(!is.null(params$root.age)) root.age = params$root.age else root.age = NULL
   if(!is.null(params$scaleHeight)) scaleHeight = params$scaleHeight else scaleHeight = FALSE
-  if(!is.null(params$root.station)) root.station = params$root.station else root.station = TRUE
+  if(!is.null(params$root.station)) root.station = params$root.station else root.station = FALSE
   if(!is.null(params$clade)) clade = params$clade else clade = NULL
   if(!is.null(params$mserr)) mserr = params$mserr else mserr = "none"
   if(!is.null(params$starting.vals)) starting.vals = params$starting.vals else starting.vals = NULL
+  if(!is.null(params$check.identify)) check.identify = params$check.identify else check.identify = TRUE
+  if(!is.null(params$algorithm)) algorithm = params$algorithm else algorithm = "invert"
 
-  out <- OUwie(tree, data, model = model, simmap.tree = TRUE, diagn = TRUE, quiet = TRUE,
-               warn = FALSE, root.age = root.age, scaleHeight = scaleHeight,
+  out <- OUwie(tree, data, model = model, simmap.tree = TRUE, quiet = TRUE,
+               warn = FALSE, diagn = TRUE, root.age = root.age, scaleHeight = scaleHeight,
                root.station = root.station, clade = clade, mserr = mserr,
-               starting.vals = starting.vals)
+               starting.vals = starting.vals, check.identify = check.identify,
+               algorithm = algorithm)
   out
 }
-
-
-
-
 
 
 # wraps up OUwie function by setting up progress bar for all analyses and saving output files for each tree independently
@@ -198,7 +201,7 @@ ouwie_wrapper <- function(x, .pb, dir, params) {
   # add in optional ouwie arguments
   if(length(params) == 0){
     out <- x %>% mutate(res = pmap(list(tree, model, data),
-                                   ~new_ouwie(..1, ..2, ..3, params = NULL, .pb)))
+                                   ~new_ouwie(..1, ..2, ..3, params, .pb)))
   } else {
     out <- x %>% mutate(res = pmap(list(tree, model, data, params),
                                    ~new_ouwie(..1, ..2, ..3, ..4, .pb)))
@@ -214,3 +217,4 @@ ouwie_wrapper <- function(x, .pb, dir, params) {
 
   return(out)
 }
+

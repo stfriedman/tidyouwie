@@ -15,19 +15,19 @@
 #'
 #' models <- c("BM1", "OUM") #set of models to run on each simmap
 #'
-#' results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)#'
+#' results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)
 #' expand_params(results)
 
 #' @export
 # reads in an ouwie_tidy object and prints parameters of each regime in columns
 expand_params <- function(results) {
-  regimes <- levels(results$full_output$res[[1]]$tot.states)
+  regimes <- levels(factor(colnames(results$input$simtree[[1]]$mapped.edge)))
 
   results$tidy_output %>%
     gather(theta:sigma.sq, key = "param", value = "value") %>%
     mutate(value = map(value, ~set_names(.x, regimes[seq_along(.)])),
            value = map(value, ~enframe(.x, name = "regime"))) %>%
-    unnest(value, .drop = FALSE) %>%
+    unnest(value) %>%
     unite(name, param, regime) %>%
     pivot_wider(names_from = "name", values_from = "value",
       values_fn = list(value = list)) %>%
