@@ -5,12 +5,11 @@ Authors: c(person(given = c("Sarah", "Friedman"), email = "sarahtfried@gmail.com
             person("Jeremey", "Beaulieu", role = "ctb", comment = "Author of included OUwie package"),
             person("Brian", "O'Meara", role = "ctb", comment = "Author of included OUwie package"))
 Description: Package runs OUwie across all combinations of trees, simmaps, models, and continuous traits and outputs analyses in a neat tibble. Additional functions expand parameter output for easy comparisons between regimes and allow visualization of parameter distributions. 
-Depends: R (>= 3.5.0)
-Imports: 
+Depends: R (>= 3.5.0),
 	OUwie,
 	phytools, 
 	tidyverse
-Suggests:
+Imports:
 	gtable, 
 	grid, 
 	viridis
