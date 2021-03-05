@@ -4,8 +4,16 @@
 \alias{ouwie_tidy}
 \title{Wrapper OUwie function}
 \usage{
-ouwie_tidy(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL,
-  dir = NULL, ...)
+ouwie_tidy(
+  phy,
+  disc_trait,
+  cont_traits,
+  models,
+  nsim,
+  tip_col = NULL,
+  dir = NULL,
+  ...
+)
 }
 \arguments{
 \item{phy}{Phylogenetic tree(s) containing all species/specimens present in dataset.}
@@ -24,6 +32,12 @@ ouwie_tidy(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL,
 
 \item{params}{Optional; list of parameters to be passed to OUwie. NOTE: be aware that default OUwie parameters differ from the default OUwie documentation.}
 }
+\value{
+Function returns a list of the following
+\item{input}{Simmaps and traits originally input into OUwie}
+\item{full_output}{Raw tibble with all results}
+\item{tidy_output}{Tidy tibble summarizing results}
+}
 \description{
 This function allows you to run OUwie across all combinations of trees, simmaps, models, and continuous traits and outputs analyses in a neat tibble.
 }
@@ -34,8 +48,11 @@ disc_trait <- setNames(sample(letters[1:2], 20, replace = TRUE), phy[[1]]$tip.la
 cont_traits <- as_tibble(iris[1:20, 1:2]) \%>\%
  mutate(species = phy[[1]]$tip.label)
 
-models <- c("BM1", "BMS", "OUM") #set of models to run on each simmap
+models <- c("BM1", "OUM") #set of models to run on each simmap
 
 results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)
 results$tidy_output
+}
+\references{
+Beaulieu, J. M., & O’Meara, B. 2014. OUwie: analysis of evolutionary rates in an OU framework.
 }

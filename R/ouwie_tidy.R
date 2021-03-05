@@ -14,8 +14,10 @@
 #' \item{input}{Simmaps and traits originally input into OUwie}
 #' \item{full_output}{Raw tibble with all results}
 #' \item{tidy_output}{Tidy tibble summarizing results}
-
-
+#' @import OUwie
+#' @import phytools
+#' @import tidyverse
+#'
 #' @references Beaulieu, J. M., & O’Meara, B. 2014. OUwie: analysis of evolutionary rates in an OU framework.
 #'
 #' @examples
