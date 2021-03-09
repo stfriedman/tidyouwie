@@ -6,7 +6,7 @@
 #' @param disc_trait Named vector of discrete characters where the names match the tree tips
 #' @param cont_traits Data frame containing a character column with tree tips and any number of columns containing continuous trait data. Order of columns does not matter.
 #' @param models Vector containing the set of models to run on each tree as designated in OUwie documentation
-#' @param nsim Number of simmaps to create and run all analyses on
+#' @param nsim Number of simmaps to create (for each tree) and run all analyses on
 #' @param dir Optional; the directory to save output to, otherwise will save to working directory
 #' @param tip_col Optional; column name in "cont_traits" that matches tree tips
 #' @param params Optional; list of parameters to be passed to OUwie. NOTE: be aware that default OUwie parameters differ from the default OUwie documentation.
@@ -36,7 +36,7 @@
 
 
 
-ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, ...) {
+ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, params = list(),...) {
   inputs <- ouwie_setup(phy, disc_trait, cont_traits, nsim, tip_col, dir, ...)
 
   if(class(phy) == "multiPhylo"){
@@ -85,7 +85,6 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 
 
   # run OUwie on each subset (simmap) of data and save intermediate output to designated director
-  params <- list(...)
   raw <- by_tree %>%
     map2(., seq_along(.), ~ouwie_wrapper(.x, .pb, dir, params))
   raw_output <- do.call(rbind, raw)
@@ -107,7 +106,7 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 }
 
 #data to be fed into OUwie, regimes are a named vector, traits are a data frame or tibble with species names and continuous trait data in columns, nsim is number of simmaps. Output are simmaps and a tibble of OUwie-ready data frames for each continuous trait
-ouwie_setup <- function(phy, regimes, traits, nsim = nsim, tip_col = NULL, dir, ...) {
+ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, ...) {
   simtree <- make.simmap(phy, regimes, nsim = nsim, ...) # make simmaps
 
   if(!is.null(tip_col)){
