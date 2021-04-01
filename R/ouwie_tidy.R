@@ -6,7 +6,7 @@
 #' @param disc_trait Named vector of discrete characters where the names match the tree tips
 #' @param cont_traits Data frame containing a character column with tree tips and any number of columns containing continuous trait data. Order of columns does not matter.
 #' @param models Vector containing the set of models to run on each tree as designated in OUwie documentation
-#' @param nsim Number of simmaps to create and run all analyses on
+#' @param nsim Number of simmaps to create (for each tree) and run all analyses on
 #' @param dir Optional; the directory to save output to, otherwise will save to working directory
 #' @param tip_col Optional; column name in "cont_traits" that matches tree tips
 #' @param params Optional; list of parameters to be passed to OUwie. NOTE: be aware that default OUwie parameters differ from the default OUwie documentation.
@@ -36,7 +36,11 @@
 
 
 
+<<<<<<< HEAD
 ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, params = list(), ...) {
+=======
+ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, params = list(),...) {
+>>>>>>> db14634e33ef3f11e4c5e2e9efa9d55a94c7295d
   inputs <- ouwie_setup(phy, disc_trait, cont_traits, nsim, tip_col, dir, ...)
 
   if(is.null(nsim)) nsim <- length(inputs$simtree)
