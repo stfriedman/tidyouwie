@@ -36,8 +36,10 @@
 
 
 
-ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, ...) {
+ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, params = list(), ...) {
   inputs <- ouwie_setup(phy, disc_trait, cont_traits, nsim, tip_col, dir, ...)
+
+  if(is.null(nsim)) nsim <- length(inputs$simtree)
 
   if(class(phy) == "multiPhylo"){
     nphy <- length(phy)
@@ -71,10 +73,12 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
               "runs. \n"))
 
     inputs$simtree <- structure(inputs$simtree,
-                                class = c("list","simmap","phylo"))
+                                class = c("list","multiSimmap","multiPhylo"))
     by_tree <- tibble(simmap_id = seq_along(inputs$simtree), tree = inputs$simtree) %>%
       crossing(model = models) %>%  # make each combination of tree and model
-      crossing(trait = inputs$ouwie_input) %>%
+      crossing(trait = inputs$ouwie_input$trait, data = inputs$ouwie_input$data,
+               tree_id = inputs$ouwie_input$tree_id) %>%
+
       #spawn_progbar() %>% #set up progress bar to run
       split(.$simmap_id)
   }
@@ -85,9 +89,8 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 
 
   # run OUwie on each subset (simmap) of data and save intermediate output to designated director
-  params <- list(...)
   raw <- by_tree %>%
-    map2(., seq_along(.), ~ouwie_wrapper(.x, .pb, dir, params))
+    map2(., seq_along(.), ~ouwie_wrapper(.x, dir, params))
   raw_output <- do.call(rbind, raw)
 
   options(warn = w)
@@ -107,7 +110,7 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 }
 
 #data to be fed into OUwie, regimes are a named vector, traits are a data frame or tibble with species names and continuous trait data in columns, nsim is number of simmaps. Output are simmaps and a tibble of OUwie-ready data frames for each continuous trait
-ouwie_setup <- function(phy, regimes, traits, nsim = nsim, tip_col = NULL, dir, ...) {
+ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, ...) {
   simtree <- make.simmap(phy, regimes, nsim = nsim, ...) # make simmaps
 
   if(!is.null(tip_col)){
@@ -171,7 +174,7 @@ ouwie_setup <- function(phy, regimes, traits, nsim = nsim, tip_col = NULL, dir, 
 
 
 # OUwie function with attributes pre-set
-new_ouwie <- function(tree, model, data, params, .pb){
+new_ouwie <- function(tree, model, data, params){
   # printing progress bar
   #.pb$tick()$print()
   data <- as.data.frame(data)
@@ -195,7 +198,7 @@ new_ouwie <- function(tree, model, data, params, .pb){
 
 
 # wraps up OUwie function by setting up progress bar for all analyses and saving output files for each tree independently
-ouwie_wrapper <- function(x, .pb, dir, params) {
+ouwie_wrapper <- function(x, dir, params) {
 
   # run ouwie on each simmap
   i <- x$simmap_id[[1]]
@@ -203,10 +206,10 @@ ouwie_wrapper <- function(x, .pb, dir, params) {
   # add in optional ouwie arguments
   if(length(params) == 0){
     out <- x %>% mutate(res = pmap(list(tree, model, data),
-                                   ~new_ouwie(..1, ..2, ..3, params, .pb)))
+                                   ~new_ouwie(..1, ..2, ..3, params)))
   } else {
     out <- x %>% mutate(res = pmap(list(tree, model, data, params),
-                                   ~new_ouwie(..1, ..2, ..3, ..4, .pb)))
+                                   ~new_ouwie(..1, ..2, ..3, ..4)))
   }
 
    # save intermediate output by simmap
