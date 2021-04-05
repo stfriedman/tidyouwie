@@ -190,7 +190,6 @@ ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, ...) {
 new_ouwie <- function(tree, model, data, params){
   # printing progress bar
   #.pb$tick()$print()
-  cat(paste0("Running trait: ", colnames(data)[[3]], "\n"))
   data <- as.data.frame(data)
 
   if(!is.null(params$root.age)) root.age = params$root.age else root.age = NULL
