@@ -35,12 +35,7 @@
 #' @export
 
 
-
-<<<<<<< HEAD
 ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, params = list(), ...) {
-=======
-ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NULL, dir = NULL, params = list(),...) {
->>>>>>> db14634e33ef3f11e4c5e2e9efa9d55a94c7295d
   inputs <- ouwie_setup(phy, disc_trait, cont_traits, nsim, tip_col, dir, ...)
 
   if(is.null(nsim)) nsim <- length(inputs$simtree)
@@ -67,18 +62,33 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
       split(.$simmap_id)
 
   } else {
-    nruns <- length(inputs$simtree) * length(models) * nrow(inputs$ouwie_input)
 
-    #runs OUwie analysis on each combination of tree and model and trait,
-    # only run once (will take a while depending on models run/num of simmaps)
-    cat(paste("Running OUwie across 1 tree,", length(inputs$simtree), "simmaps,",
-              length(models), "model(s), and", nrow(inputs$ouwie_input),
-              "continuous trait(s). This will be a total of", nruns,
-              "runs. \n"))
+    if(nsim == 1) {
+      inputs$simtree <- structure(inputs$simtree,
+                                  class = c("list","simmap","phylo"))
+      by_tree <- tibble(simmap_id = 1, tree = list(inputs$simtree))
+      nruns <- length(models) * nrow(inputs$ouwie_input)
 
-    inputs$simtree <- structure(inputs$simtree,
-                                class = c("list","multiSimmap","multiPhylo"))
-    by_tree <- tibble(simmap_id = seq_along(inputs$simtree), tree = inputs$simtree) %>%
+      #runs OUwie analysis on each combination of tree and model and trait,
+      # only run once (will take a while depending on models run/num of simmaps)
+      cat(paste("Running OUwie across 1 tree,", 1, "simmaps,",
+                length(models), "model(s), and", nrow(inputs$ouwie_input),
+                "continuous trait(s). This will be a total of", nruns,
+                "runs. \n"))
+    } else {
+      inputs$simtree <- structure(inputs$simtree,
+                                  class = c("list","multiSimmap","multiPhylo"))
+      by_tree <- tibble(simmap_id = seq_along(inputs$simtree), tree = inputs$simtree)
+      nruns <- length(inputs$simtree) * length(models) * nrow(inputs$ouwie_input)
+
+      #runs OUwie analysis on each combination of tree and model and trait,
+      # only run once (will take a while depending on models run/num of simmaps)
+      cat(paste("Running OUwie across 1 tree,", length(inputs$simtree), "simmaps,",
+                length(models), "model(s), and", nrow(inputs$ouwie_input),
+                "continuous trait(s). This will be a total of", nruns,
+                "runs. \n"))
+    }
+    by_tree <- by_tree %>%
       crossing(model = models) %>%  # make each combination of tree and model
       crossing(trait = inputs$ouwie_input$trait, data = inputs$ouwie_input$data,
                tree_id = inputs$ouwie_input$tree_id) %>%
@@ -90,7 +100,6 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
   # resetting warn settings because otherwise bind_rows gets mad at using an unknown column class, simmap
   w <- options()$warn
   options(warn = -1)
-
 
   # run OUwie on each subset (simmap) of data and save intermediate output to designated director
   raw <- by_tree %>%
@@ -181,6 +190,7 @@ ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, ...) {
 new_ouwie <- function(tree, model, data, params){
   # printing progress bar
   #.pb$tick()$print()
+  cat(paste0("Running trait: ", colnames(data)[[3]], "\n"))
   data <- as.data.frame(data)
 
   if(!is.null(params$root.age)) root.age = params$root.age else root.age = NULL
