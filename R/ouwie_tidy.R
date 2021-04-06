@@ -66,7 +66,7 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
     if(nsim == 1) {
       inputs$simtree <- structure(inputs$simtree,
                                   class = c("list","simmap","phylo"))
-      by_tree <- tibble(simmap_id = 1, tree = list(inputs$simtree))
+      by <- tibble(simmap_id = 1, tree = list(inputs$simtree))
       nruns <- length(models) * nrow(inputs$ouwie_input)
 
       #runs OUwie analysis on each combination of tree and model and trait,
@@ -78,7 +78,7 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
     } else {
       inputs$simtree <- structure(inputs$simtree,
                                   class = c("list","multiSimmap","multiPhylo"))
-      by_tree <- tibble(simmap_id = seq_along(inputs$simtree), tree = inputs$simtree)
+      by <- tibble(simmap_id = seq_along(inputs$simtree), tree = inputs$simtree)
       nruns <- length(inputs$simtree) * length(models) * nrow(inputs$ouwie_input)
 
       #runs OUwie analysis on each combination of tree and model and trait,
@@ -88,11 +88,9 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
                 "continuous trait(s). This will be a total of", nruns,
                 "runs. \n"))
     }
-    by_tree <- by_tree %>%
+    by_tree <- by %>%
       crossing(model = models) %>%  # make each combination of tree and model
-      crossing(trait = inputs$ouwie_input$trait, data = inputs$ouwie_input$data,
-               tree_id = inputs$ouwie_input$tree_id) %>%
-
+      crossing(inputs$ouwie_input) %>%
       #spawn_progbar() %>% #set up progress bar to run
       split(.$simmap_id)
   }
