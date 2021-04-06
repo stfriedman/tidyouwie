@@ -54,10 +54,9 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
     inputs$simtree <- structure(inputs$simtree,
                                 class = c("list","multiSimmap","multiPhylo"))
     by_tree <- tibble(tree_id = rep(1:nphy, each = nsim),
-                      simmap_id = rep(1:nsim, nphy)) %>%
+                      simmap_id = rep(1:nsim, nphy), tree = inputs$simtree) %>%
       crossing(model = models) %>%  # make each combination of tree and model
-      left_join(tibble(tree_id = rep(1:nphy, each = nsim), tree = inputs$simtree), by = "tree_id") %>%
-      left_join(., inputs$ouwie_input, by = "tree_id") %>%
+      left_join(inputs$ouwie_input, by = "tree_id") %>%
       #spawn_progbar() %>% #set up progress bar to run
       split(.$simmap_id)
 
@@ -108,10 +107,10 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
 
   #compile OUwie results in a neat table
   ouwie_df <- raw_output %>%
-    mutate(aicc = map_dbl(res, "AICc"),
-           lnl = map_dbl(res, "loglik"),
-           eigval = map(res, "eigval"),
-           theta = map(res, ~.$theta[,1]),
+    mutate(aicc = map_dbl(res, ~.$AICc),
+           lnl = map_dbl(res, ~.$loglik),
+           eigval = map(res, ~.$eigval),
+           theta = map(res, getTheta),
            alpha = map(res, ~.$solution[1,]),
            sigma.sq = map(res, ~.$solution[2,])) %>%
     select(trait, everything(), -tree, -data, -res)
@@ -119,6 +118,25 @@ ouwie_tidy <- function(phy, disc_trait, cont_traits, models, nsim, tip_col = NUL
   out <- list(input = inputs, full_output = raw_output, tidy_output = ouwie_df)
   out
 }
+
+## code from OUwie.print
+getTheta <- function(x){
+  if(x$model %in% c("BM1", "BMS", "OU1")){
+    if(x$root.station==FALSE){
+      theta.mat <- matrix(t(x$theta[1,]), 2, length(levels(x$tot.states)))
+    }
+    else{
+      theta.mat<-matrix(t(x$theta), 2, length(levels(x$tot.states)))
+    }
+    rownames(theta.mat)<-c("estimate", "se")
+    colnames(theta.mat) <- levels(x$tot.states)
+    out <- theta.mat[1,]
+  } else {
+    out <- x$theta[,1]
+  }
+  out
+}
+
 
 #data to be fed into OUwie, regimes are a named vector, traits are a data frame or tibble with species names and continuous trait data in columns, nsim is number of simmaps. Output are simmaps and a tibble of OUwie-ready data frames for each continuous trait
 ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, ...) {

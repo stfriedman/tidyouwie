@@ -21,15 +21,16 @@
 #' @export
 # reads in an ouwie_tidy object and prints parameters of each regime in columns
 expand_params <- function(results) {
-  regimes <- levels(factor(colnames(results$input$simtree[[1]]$mapped.edge)))
+  regimes <- colnames(results$input$simtree[[1]]$mapped.edge)
 
   results$tidy_output %>%
     gather(theta:sigma.sq, key = "param", value = "value") %>%
     mutate(value = map(value, ~set_names(.x, regimes[seq_along(.)])),
            value = map(value, ~enframe(.x, name = "regime"))) %>%
     unnest(value) %>%
-    unite(name, param, regime) %>%
+    unite("name", param, regime) %>%
+    filter(name != "theta_NA") %>%
     pivot_wider(names_from = "name", values_from = "value",
       values_fn = list(value = list)) %>%
-    unchop(everything())
+    unnest(-eigval)
   }
