@@ -17,10 +17,13 @@
 #' results <- ouwie_tidy(phy, disc_trait, cont_traits, models, nsim = 2)#'
 #' plot_params(results)
 #' @export
-
+#' @import viridis
+#' @import grid
+#' @import gtable
+#'
 # plots alpha, sigma, and theta parameters for each model and regime; separate plots for each continuous trait in dataset
 plot_params <- function(results) {
-  regimes <- levels(results$full_output$res[[1]]$tot.states)
+  regimes <- colnames(results$input$simtree[[1]]$mapped.edge)
 
   p <- results$tidy_output %>%
     gather(theta:sigma.sq, key = "param", value = "value") %>%
@@ -56,7 +59,7 @@ plot_params <- function(results) {
     # plot that has graph aesthetics
     ggp <- ggplot(p1, aes(fill = regime)) +
       geom_density(aes(value), alpha = 0.6, col = NA) +
-      facet_wrap(param ~ model, scales="free", nrow = 3, ncol = nmods,
+      facet_wrap(param ~ model, scales="free", nrow = 3, ncol = length(nmods),
                  labeller = labeller(multi_line = FALSE)) +
       theme_classic() +
 
