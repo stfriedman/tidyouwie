@@ -1,3 +1,4 @@
+CURRENTLY HAS A BUG THAT I AM WORKING ON. DO NOT USE.
 # tidyouwie
 Package containing wrapper functions around OUwie to streamline analyses and export results in a neat tibble. 
 
