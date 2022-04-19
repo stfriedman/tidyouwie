@@ -139,8 +139,8 @@ getTheta <- function(x){
 
 
 #data to be fed into OUwie, regimes are a named vector, traits are a data frame or tibble with species names and continuous trait data in columns, nsim is number of simmaps. Output are simmaps and a tibble of OUwie-ready data frames for each continuous trait
-ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, ...) {
-  simtree <- make.simmap(phy, regimes, nsim = nsim, ...) # make simmaps
+ouwie_setup <- function(phy, regimes, traits, nsim, tip_col, dir, model = "ARD", ...) {
+  simtree <- make.simmap(phy, regimes, nsim = nsim, model = model, ...) # make simmaps
 
   if(!is.null(tip_col)){
     nm <- tip_col
